@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --ig-blue: #405DE6;
+            --ig-purple: #833AB4;
+            --ig-pink: #C13584;
+            --ig-red: #E1306C;
+            --ig-orange: #FD1D1D;
+            --ig-yellow: #F56040;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #fafafa;
+        }
+
+        .ig-header {
+            background: white;
+            border-bottom: 1px solid #dbdbdb;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .ig-container {
+            max-width: 935px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .ig-logo {
+            font-family: 'Billabong', cursive;
+            font-size: 32px;
+            text-align: center;
+            background: linear-gradient(45deg, 
+                var(--ig-blue), 
+                var(--ig-purple), 
+                var(--ig-pink), 
+                var(--ig-red));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .ig-card {
+            background: white;
+            border: 1px solid #dbdbdb;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+
+        .wordcloud-container {
+            height: 400px;
+            width: 100%;
+        }
+
+        .description {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .lang-tabs {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .lang-tab {
+            padding: 5px 10px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .lang-tab.active {
+            border-bottom: 2px solid var(--ig-blue);
+            font-weight: bold;
+        }
+
+        .lang-content {
+            display: none;
+        }
+
+        .lang-content.active {
+            display: block;
+        }
+
+        @font-face {
+            font-family: 'Billabong';
+            src: url('https://fonts.cdnfonts.com/s/13949/Billabong.woff') format('woff');
+        }
+    </style>
+</head>
+<body>
+    <header class="ig-header">
+        <div class="ig-container">
+            <div class="ig-logo">Instagram Analytics</div>
+            <div class="description">
+                <div class="lang-tabs">
+                    <div class="lang-tab active" onclick="showDescription('feedback', 'en')">English</div>
+                    <div class="lang-tab" onclick="showDescription('feedback', 'fa')">فارسی</div>
+                    <div class="lang-tab" onclick="showDescription('feedback', 'zh')">中文</div>
+                </div>
+                
+                <div id="feedback-en" class="lang-content active">
+                    Feedback analysis on Instagram regarding issues with pumps featuring new colors indicates mixed sentiments. While some users appreciate the aesthetic changes, others report technical issues such as leakage and mechanical failures.
+                </div>
+                
+                <div id="feedback-fa" class="lang-content" style="direction: rtl; text-align: right;"></div>
+                    تحلیل فیدبک‌های اینستاگرام در رابطه با مشکلات پمپ‌های با رنگ‌های جدید نشان‌دهنده نظرات متفاوت است. در حالی که برخی کاربران از تغییرات ظاهری استقبال کرده‌اند، دیگران مشکلات فنی مانند نشتی و خرابی مکانیکی را گزارش داده‌اند.
+                </div>
+
+                <div id="feedback-zh" class="lang-content">
+                    关于带有新颜色泵的Instagram反馈分析显示了不同的意见。一些用户欣赏美学变化，而另一些用户报告了诸如泄漏和机械故障等技术问题。
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="ig-container">
+        <!-- Doughnut Chart Section -->
+        <div class="ig-card">
+            <h2>Sentiment Analysis</h2>
+            
+            <div class="description">
+                <div class="lang-tabs">
+                    <div class="lang-tab active" onclick="showDescription('doughnut', 'en')">English</div>
+                    <div class="lang-tab" onclick="showDescription('doughnut', 'fa')">فارسی</div>
+                    <div class="lang-tab" onclick="showDescription('doughnut', 'zh')">中文</div>
+                </div>
+                
+                <div id="doughnut-en" class="lang-content active">
+                    This doughnut chart shows sentiment distribution of comments about LEO pumps. 
+                    Blue represents positive (25%), pink negative (53.57%), and red neutral (21.43%) sentiments.
+                </div>
+                
+                <div id="doughnut-fa" class="lang-content">
+                    این نمودار دونا</div>ت توزیع احساسات درباره پمپ‌های لئو را نشان می‌دهد.
+                    آبی نشان‌دهنده نظرات مثبت (25%)، صورتی منفی (53.57%) و قرمز خنثی (21.43%) است.
+                </div>
+                
+                <div id="doughnut-zh" class="lang-content">
+                    这个环形图显示了关于LEO泵的评论情绪分布。
+                    蓝色代表正面(25%)，粉红色负面(53.57%)，红色中性(21.43%)情绪。
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="doughnutChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Bar Chart Section -->
+        <div class="ig-card">
+            <h2>Likes Distribution</h2>
+            
+            <div class="description">
+                <div class="lang-tabs">
+                    <div class="lang-tab active" onclick="showDescription('bar', 'en')">English</div>
+                    <div class="lang-tab" onclick="showDescription('bar', 'fa')">فارسی</div>
+                    <div class="lang-tab" onclick="showDescription('bar', 'zh')">中文</div>
+                </div>
+                
+                <div id="bar-en" class="lang-content active">
+                    The bar chart compares likes received by different sentiment categories.
+                    Positive comments got 7 likes, negative 15, and neutral 6 likes.
+                </div>
+                
+                <div id="bar-fa" class="lang-content">
+                    این نمودار میله‌ای لایک‌های دریافتی توسط دسته‌های مختلف اح</div>ساسات را مقایسه می‌کند.
+                    نظرات مثبت 7 لایک، منفی 15 و خنثی 6 لایک دریافت کرده‌اند.
+                </div>
+                
+                <div id="bar-zh" class="lang-content">
+                    这个条形图比较了不同情绪类别获得的点赞数。
+                    正面评论获得7个赞，负面15个，中性6个赞。
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Technical Word Cloud Section -->
+        <div class="ig-card">
+            <h2>Technical Issues</h2>
+            
+            <div class="description">
+                <div class="lang-tabs">
+                    <div class="lang-tab active" onclick="showDescription('tech', 'en')">English</div>
+                    <div class="lang-tab" onclick="showDescription('tech', 'fa')">فارسی</div>
+                    <div class="lang-tab" onclick="showDescription('tech', 'zh')">中文</div>
+                </div>
+                
+                <div id="tech-en" class="lang-content active">
+                    Word cloud showing most frequent technical terms from negative comments.
+                    Larger words indicate higher frequency. "Pump" and "mechanical failure" are most prominent.
+                </div>
+                
+                <div id="tech-fa" class="lang-content">
+                    ابر کلمات نشان‌دهنده پرتکرارترین اصطلاحات فنی از نظرات منفی.
+                    کلمات بزرگ‌تر نشان‌</div>دهنده فراوانی بیشتر هستند. "پمپ" و "خرابی مکانیکی" بارزترین هستند.
+                </div>
+                
+                <div id="tech-zh" class="lang-content">
+                    词云显示负面评论中最常见的技术术语。
+                    较大的词表示频率较高。"泵"和"机械故障"最为突出。
+                </div>
+            </div>
+            
+            <div id="technicalWordCloud" class="wordcloud-container"></div>
+        </div>
+
+        <!-- Color Word Cloud Section -->
+        <div class="ig-card">
+            <h2>Color Feedback</h2>
+            
+            <div class="description">
+                <div class="lang-tabs">
+                    <div class="lang-tab active" onclick="showDescription('color', 'en')">English</div>
+                    <div class="lang-tab" onclick="showDescription('color', 'fa')">فارسی</div>
+                    <div class="lang-tab" onclick="showDescription('color', 'zh')">中文</div>
+                </div>
+                
+                <div id="color-en" class="lang-content active">
+                    Color-related terms from comments. "Red" appears most frequently, 
+                    followed by "orange" and "new color". Size reflects mention frequency.
+                </div>
+                
+                <div id="color-fa" class="lang-content">
+                    اصطلاحات مرتبط با رنگ از نظرات. "قرمز" بیشترین تکرار را دارد،
+                    پس از آن "نارنجی" و "رنگ جدید". اندازه نشان‌دهنده فراوانی اشا</div>ره است.
+                </div>
+                
+                <div id="color-zh" class="lang-content">
+                    评论中与颜色相关的术语。"红色"出现频率最高，
+                    其次是"橙色"和"新颜色"。大小反映提及频率。
+                </div>
+            </div>
+            
+            <div id="colorWordCloud" class="wordcloud-container"></div>
+        </div>
+        
+        <!-- Comments Section -->
+        <div class="comments-section">
+            <h2>Comments Analysis (112 comments)</h2>
+            
+            <!-- Comment 1 -->
+            <div class="comment-box">
+                <div class="comment">
+                    <div class="comment-text">1 like 👏👏👏</div>
+                    <div class="translations">
+                        English: 1 like 👏👏👏<br>
+                        Chinese: 1 赞 👏👏👏
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comment 2 -->
+            <div class="comment-box">
+                <div class="comment">
+                    <div class="comment-text">1 like ❤️❤️❤️</div>
+                    <div class="translations">
+                        English: 1 like ❤️❤️❤️<br>
+                        Chinese: 1 赞 ❤️❤️❤️
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comment 3 -->
+            <div class="comment-box">
+                <div class="comment">
+                    <div class="comment-text">1 like 😍😍</div>
+                    <div class="translations">
+                        English: 1 like 😍😍<br>
+                        Chinese: 1 赞 😍😍
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comment 4 -->
+            <div class="comment-box">
+                <div class="comment">
+                    <div class="comment-text">1 like 🔥🔥👏👏</div>
+                    <div class="translations">
+                        English: 1 like 🔥🔥👏👏<br>
+                        Chinese: 1 赞 🔥🔥👏👏
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comment 5 -->
+            <div class="comment-box">
+                <div class="comment">
+                    <div class="comment-text">7 likes خب معلومه پمپ لئو👍بهت افتخار میکنم درود به همسر پرتلاشم🔥🔥❤️👏👏👏</div>
+                    <div class="translations"></div>
+                    English: 1 like 🙌🔥<br>
+                    Chinese: 1 赞 🙌🔥
+                </div>
+            </div>
+            
+            <!-- Comment 7 -->
+            <div class="comment">
+                <div class="comment-text">1 like 👏👏👏</div>
+                <div class="translations">
+                    English: 1 like 👏👏👏<br>
+                    Chinese: 1 赞 👏👏👏
+                </div>
+            </div>
+            
+            <!-- Comment 8 -->
+            <div class="comment">
+                <div class="comment-text">1 like 👏👏👏</div>
+                <div class="translations">
+                    English: 1 like 👏👏👏<br>
+                    Chinese: 1 赞 👏👏👏
+                </div>
+            </div>
+            
+            <!-- Comment 9 -->
+            <div class="comment">
+                <div class="comment-text">1 like اینورتر</div>
+                <div class="translations">
+                    English: 1 like Inverter<br>
+                    Chinese: 1 赞 逆变器
+                </div>
+            </div>
+            
+            <!-- Comment 10 -->
+            <div class="comment">
+                <div class="comment-text">2 likes دوروپ دوستان😂😂</div>
+                <div class="translations">
+                    English: 2 likes Dear friends😂😂<br>
+                    Chinese: 2 赞 亲爱的朋友们😂😂
+                </div>
+            </div>
+
+            <!-- Comment 11 -->
+            <div class="comment">
+                <div class="comment-text">2 likes نصب ایرادداره</div>
+                <div class="translations">
+                    English: 2 likes Installation has problem<br>
+                    Chinese: 2 赞 安装有问题
+                </div>
+            </div>
+
+            <!-- Comment 12 -->
+            <div class="comment">
+                <div class="comment-text">1 like وقتت بخیر مهندس عالی هستیییی</div>
+                <div class="translations">
+                    English: 1 like Good time engineer, you're great<br>
+                    Chinese: 1 赞 工程师你好，你太棒了
+                </div>
+            </div>
+
+            <!-- Comment 13 -->
+            <div class="comment">
+                <div class="comment-text">1 like 🙌🔥</div>
+                <div class="translations">
+                    English: 1 like 🙌🔥<br>
+                    Chinese: 1 赞 🙌🔥
+                </div>
+            </div>
+
+            <!-- Comment 14 -->
+            <div class="comment">
+                <div class="comment-text">1 like 👏👏👏</div>
+                <div class="translations">
+                    English: 1 like 👏👏👏<br>
+                    Chinese: 1 赞 👏👏👏
+                </div>
+            </div>
+
+            <!-- Comment 15 -->
+            <div class="comment">
+                <div class="comment-text">1 like منظور از نافی مکانیکال سیل هست؟ اگه سیل اب میده حتما تو ورودی باید صافی وای شکل باید نصب بشه.</div>
+                <div class="translations">
+                    English: 1 like By nafi you mean mechanical seal? If the seal leaks water, definitely a Y-shaped filter should be installed at the inlet.<br>
+                    Chinese: 1 赞 "纳菲"是指机械密封吗？如果密封漏水，必须在入口处安装Y型过滤器。
+                </div>
+            </div>
+
+            <!-- Comment 16 -->
+            <div class="comment">
+                <div class="comment-text">3 likes همکار محترم برا بنده هم چند بار این مشکل پیش آمد فقط اورینگ داخل نافی رو یه شماره کلفت انداختم مشکل حل شد</div>
+                <div class="translations">
+                    English: 3 likes Dear colleague, I also faced this problem several times, just put a thicker O-ring inside the nafi and the problem was solved.<br>
+                    Chinese: 3 赞 尊敬的同事，我也多次遇到这个问题，只是在纳菲里面放了一个更厚的O型圈，问题就解决了。
+                </div>
+            </div>
+
+            <!-- Comment 17 -->
+            <div class="comment">
+                <div class="comment-text">1 like موفق باشید ✨</div>
+                <div class="translations">
+                    English: 1 like Good luck ✨<br>
+                    Chinese: 1 赞 祝你好运 ✨
+                </div>
+            </div>
+
+            <!-- Comment 18 -->
+            <div class="comment">
+                <div class="comment-text">1 like فشار آب روشه ؟</div>
+                <div class="translations">
+                    English: 1 like Is the water pressure on?<br>
+                    Chinese: 1 赞 水压开了吗？
+                </div>
+            </div>
+
+            <!-- Comment 19 -->
+            <div class="comment">
+                <div class="comment-text">4 likes طبق صحبت شما این ایراد چون ۳ مرتبه تکرار شده شک برانگیز هستش چون تمام ۳بار هم یک ایراد ایجاد شده چند تا سوال دارم ۱ ورودی پمپ کوچک نشده چون تو این مدل از پمپ ها باید لوله با قطر ۱/۲ ۱ استفاده بشه ؟ سوال بعدی آیا تو پروژه دیگه ای داشتید که از این پمپ استفاده کرده باشید و مشابه این باشه؟ تابلو اینورتر نصب کردید؟ آیا ستاپ اینورتر اوکی شده و پمپ بدون زوزه کار میکنه؟ موتور پمپ دماش اوکی هستش ؟ بنظرم باید ایراد رو تو پروژه جستجو کنید چون یک ایراد سه مرتبه تکرار شده پمپ مشکل ندارد</div>
+                <div class="translations">
+                    English: 4 likes According to your words, this issue is suspicious because it has been repeated 3 times with the same problem. I have some questions: 1. Has the pump inlet been reduced? Because in this model of pumps, pipes with diameter 1/2 1 should be used. Next question: Have you used this pump in another project with similar issues? Did you install an inverter panel? Is the inverter setup OK and does the pump work without noise? Is the pump motor temperature OK? I think you should search for the problem in the project because the same issue repeated 3 times, the pump has no problem.<br>
+                    Chinese: 4 赞 根据你的说法，这个问题很可疑，因为它已经重复了3次相同的问题。我有几个问题：1. 泵的入口是否缩小了？因为在这种型号的泵中，应该使用直径为1/2 1的管道。下一个问题：你在其他项目中使用过这种泵并出现过类似问题吗？你安装变频器面板了吗？变频器设置是否正常，泵是否无噪音工作？泵电机温度正常吗？我认为你应该在项目中寻找问题，因为同一个问题重复了3次，泵没有问题。
+                </div>
+            </div>
+
+            <!-- Comment 20 -->
+            <div class="comment">
+                <div class="comment-text">1 like نصب شما عالی</div>
+                <div class="translations">
+                    English: 1 like Your installation is great<br>
+                    Chinese: 1 赞 你的安装很棒
+                </div>
+            </div>
+
+            <!-- Comment 21 -->
+            <div class="comment">
+                <div class="comment-text">1 like ربطی به ورودی نداره</div>
+                <div class="translations">
+                    English: 1 like It's not related to the inlet<br>
+                    Chinese: 1 赞 与入口无关
+                </div>
+            </div>
+
+            <!-- Comment 22 -->
+            <div class="comment">
+                <div class="comment-text">2 likes دلیل خرابی سیل مکانیکی خشک کار کردن و بالارفتن دمای شفت پمپ هست،ورودی پمپ و سایز مکش پمپ چک شه ایرادی نباشه احتمالا این سری از پمپ ها مشکل دارن</div>
+                <div class="translations">
+                    English: 2 likes The reason for mechanical seal failure is dry running and increased temperature of pump shaft, check pump inlet and suction size to ensure no problem, probably this series of pumps have issues<br>
+                    Chinese: 2 赞 机械密封损坏的原因是干运转和泵轴温度升高，检查泵入口和吸入尺寸确保没有问题，可能是这批泵有问题
+                </div>
+            </div>
+
+            <!-- Comment 23 -->
+            <div class="comment">
+                <div class="comment-text">1 like این پمپ برای چند واحد چند طبقه انتخاب شده در ضمن سایزینگ لوله درست نیست لوله های سفید اندازه اسمی یک شماره بیشتر هستش لوله ۳۲سفید دراصل سه چهارم هستش</div>
+                <div class="translations">
+                    English: 1 like This pump is selected for how many units in multi-story building? Also the pipe sizing is not correct, white pipes are nominally one size larger, white 32 pipe is actually three quarters<br>
+                    Chinese: 1 赞 这个泵是为多层建筑的多少单元选择的？另外管道尺寸不正确，白色管道名义上大一号，白色32管道实际上是四分之三
+                </div>
+            </div>
+
+            <!-- Comment 24 -->
+            <div class="comment">
+                <div class="comment-text">1 like سطح نافی کمه در مقابل بار کم میاره پمپ فشار بالا نافی باید بزرگ باشه</div>
+                <div class="translations">
+                    English: 1 like The nafi surface is small for the load, high pressure pump nafi should be larger<br>
+                    Chinese: 1 赞 纳菲表面对于负载来说太小，高压泵的纳菲应该更大
+                </div>
+            </div>
+
+            <!-- Comment 25 -->
+            <div class="comment">
+                <div class="comment-text">2 likes سلام خدمت دوستان و کارشناسان بنده تعمیر کار ونصاب پمپ آب صفر تا صد در پرند هستم خواستم خدمت اساتید اعلام کنم با توجه به ثابت بودن کاسه نمد گردش شفت داخل آن و شرایط قطع و وصل آب این اتفاق در دوحالت پیش میاد اول تاب داشتن شفت که کاسه نمد را خراب میکنه دوم قطع شدن آب و داغ شدن شفت که بازم کاسه نمد یا همان نافی را خراب میکنه ،لطفا لایک یا دیسلایک کنید</div>
+                <div class="translations">
+                    English: 2 likes Hello friends and experts, I'm a water pump repair and installation specialist in Parand, I wanted to inform the masters that considering the fixed seal ring and shaft rotation inside it and water on/off conditions, this happens in two cases: first shaft bending that damages the seal, second water cutoff and shaft overheating that again damages the seal or nafi, please like or dislike<br>
+                    Chinese: 2 赞 朋友们和专家们好，我是帕兰德的水泵维修安装专家，我想告诉大师们，考虑到固定的密封环和轴在其中的旋转以及水的开关条件，这种情况发生在两种情况下：首先是轴弯曲损坏密封，其次是水切断和轴过热再次损坏密封或纳菲，请点赞或点踩
+                </div>
+            </div>
+
+            <!-- Comment 26 -->
+            <div class="comment">
+                <div class="comment-text">2 likes خدا قوت 👏👏</div>
+                <div class="translations">
+                    English: 2 likes Well done 👏👏<br>
+                    Chinese: 2 赞 干得好 👏👏
+                </div>
+            </div>
+
+            <!-- Comment 27 -->
+            <div class="comment">
+                <div class="comment-text">2 likes 👏👏👏👏</div>
+                <div class="translations">
+                    English: 2 likes 👏👏👏👏<br>
+                    Chinese: 2 赞 👏👏👏👏
+                </div>
+            </div>
+
+            <!-- Comment 28 -->
+            <div class="comment">
+                <div class="comment-text">2 likes 😂😂😂😂</div>
+                <div class="translations">
+                    English: 2 likes 😂😂😂😂<br>
+                    Chinese: 2 赞 😂😂😂😂
+                </div>
+            </div>
+
+            <!-- Comment 29 -->
+            <div class="comment">
+                <div class="comment-text">1 like به نصب ربطی نداره چه ورودی خروجی کم زیاد باشه به نافی ربط نداره</div>
+                <div class="translations">
+                    English: 1 like It's not related to installation, no matter inlet/outlet is small or large, it's not related to nafi<br>
+                    Chinese: 1 赞 与安装无关，无论入口/出口大小如何，都与纳菲无关
+                </div>
+            </div>
+
+            <!-- Comment 30 -->
+            <div class="comment">
+                <div class="comment-text">2 likes تو خروجی آب ایراده.بررسی کن حتما یک جا گیر داره نمیزاره آب به درستی رو به جلو بره.به پمپ فشار میاد آب میده.</div>
+                <div class="translations">
+                    English: 2 likes There's problem in water outlet. Check it, definitely something is stuck not letting water flow properly. Pressure comes to pump and it leaks.<br>
+                    Chinese: 2 赞 出水口有问题。检查一下，肯定有东西卡住不让水正常流动。压力传到泵上就漏水了。
+                </div>
+            </div>
+
+            <!-- Comment 31 -->
+            <div class="comment">
+                <div class="comment-text">1 like ورودی و خروجی تا رایز اصلی</div>
+                <div class="translations">
+                    English: 1 like Inlet and outlet to main riser<br>
+                    Chinese: 1 赞 入口和出口到主立管
+                </div>
+            </div>
+
+            <!-- Comment 32 -->
+            <div class="comment">
+                <div class="comment-text">1 like سلام استاد ایرادی دیده نمیشه مگه محل نصب چهار راه</div>
+                <div class="translations">
+                    English: 1 like Hello master, no issue is seen unless installation location is intersection<br>
+                    Chinese: 1 赞 师傅好，除非安装在十字路口，否则看不出问题
+                </div>
+            </div>
+
+            <!-- Comment 33 -->
+            <div class="comment">
+                <div class="comment-text">1 like متاسفانه پمپ اای لئو تو یکی دو سال اخیر بع شدت کیفیتش اونده پایین نخرین استفاده نکنین</div>
+                <div class="translations">
+                    English: 1 like Unfortunately Leo pump quality has dropped severely in last couple years, don't buy don't use<br>
+                    Chinese: 1 赞 不幸的是利欧泵的质量在过去几年严重下降，不要买不要用
+                </div>
+            </div>
+
+            <!-- Comment 34 -->
+            <div class="comment">
+                <div class="comment-text">1 like سلام شما یک عدد منبع فشار ببند و پنج راهی رو عمودی ببندید درست میشه</div>
+                <div class="translations">
+                    English: 1 like Hello, connect one pressure tank and install the 5-way vertically, it will be fixed<br>
+                    Chinese: 1 赞 你好，连接一个压力罐并垂直安装五通，就会修复
+                </div>
+            </div>
+
+            <!-- Comment 35 -->
+            <div class="comment">
+                <div class="comment-text">1 like برای وجود منبع فشار دومه</div>
+                <div class="translations">
+                    English: 1 like It's because of second pressure tank<br>
+                    Chinese: 1 赞 是因为第二个压力罐
+                </div>
+            </div>
+
+            <!-- Comment 36 -->
+            <div class="comment">
+                <div class="comment-text">3 likes فقط و فقط لئو خرابه</div>
+                <div class="translations">
+                    English: 3 likes Only and only Leo is bad<br>
+                    Chinese: 3 赞 只有利欧是坏的
+                </div>
+            </div>
+
+            <!-- Comment 37 -->
+            <div class="comment">
+                <div class="comment-text">1 like 😍😍😍</div>
+                <div class="translations">
+                    English: 1 like 😍😍😍<br>
+                    Chinese: 1 赞 😍😍😍
+                </div>
+            </div>
+
+            <!-- Comment 38 -->
+            <div class="comment">
+                <div class="comment-text">1 like 👏</div>
+                <div class="translations">
+                    English: 1 like 👏<br>
+                    Chinese: 1 赞 👏
+                </div>
+            </div>
+
+            <!-- Comment 39 -->
+            <div class="comment">
+                <div class="comment-text">1 like ❤️❤️❤️</div>
+                <div class="translations">
+                    English: 1 like ❤️❤️❤️<br>
+                    Chinese: 1 赞 ❤️❤️❤️
+                </div>
+            </div>
+
+            <!-- Comment 40 -->
+            <div class="comment">
+                <div class="comment-text">1 like بله.همین تجربه رو من داشتم.من فلکه خروجی رو تا نصفه به پیشنهاد</div>
+                <div class="translations">
+                    English: 1 like Yes. I had same experience. I half-closed outlet valve as suggested<br>
+                    Chinese: 1 赞 是的。我有同样的经历。我按照建议半关闭了出口阀
+                </div>
+            </div>
+
+            <!-- Comment 41 -->
+            <div class="comment">
+                <div class="comment-text">2 likes سلام نفرمودین چند واحد هست ؟؟؟</div>
+                <div class="translations">
+                    English: 2 likes Hello you didn't say how many units???<br>
+                    Chinese: 2 赞 你好你没说有多少单元？？？
+                </div>
+            </div>
+
+            <!-- Comment 42 -->
+            <div class="comment">
+                <div class="comment-text">1 like ❤️❤️❤️❤️❤️</div>
+                <div class="translations">
+                    English: 1 like ❤️❤️❤️❤️❤️<br>
+                    Chinese: 1 赞 ❤️❤️❤️❤️❤️
+                </div>
+            </div>
+
+            <!-- Comment 43 -->
+            <div class="comment">
+                <div class="comment-text">1 like 👏👏👏</div>
+                <div class="translations">
+                    English: 1 like 👏👏👏<br>
+                    Chinese: 1 赞 👏👏👏
+                </div>
+            </div>
+
+            <!-- Comment 44 -->
+            <div class="comment">
+                <div class="comment-text">1 like سلام با توجه به قدرت پمپ ،استفاده از لوله آذین ۳۲ که فقط به اسم ۱ اینچ هست درست نمی‌باشد.از لوله ۴۰ استفاده کنید و در ضمن از درایو هم استفاده نمایید.</div>
+                <div class="translations">
+                    English: 1 like Hello considering pump power, using Azin 32 pipe which is nominally 1 inch is not correct. Use 40 pipe and also use drive.<br>
+                    Chinese: 1 赞 你好，考虑到泵的功率，使用名义上1英寸的Azin 32管道不正确。使用40管道并使用驱动器。
+                </div>
+            </div>
+
+            <!-- Comment 45 -->
+            <div class="comment">
+                <div class="comment-text">1 like صاف درایو نصب کنید یا اگه میتونید هزینه کنید اینورتر درایو نصب کنید</div>
+                <div class="translations">
+                    English: 1 like Install straight drive or if you can afford install inverter drive<br>
+                    Chinese: 1 赞 安装直驱或者如果可以的话安装变频驱动器
+                </div>
+            </div>
+
+            <!-- Comment 46 -->
+            <div class="comment">
+                <div class="comment-text">1 like 😍😍❤️❤️👏👏</div>
+                <div class="translations">
+                    English: 1 like 😍😍❤️❤️👏👏<br>
+                    Chinese: 1 赞 😍😍❤️❤️👏👏
+                </div>
+            </div>
+
+            <!-- Comment 47 -->
+            <div class="comment">
+                <div class="comment-text">1 like شما کارت درسته</div>
+                <div class="translations">
+                    English: 1 like Your work is correct<br>
+                    Chinese: 1 赞 你的工作是正确的
+                </div>
+            </div>
+
+            <!-- Comment 48 -->
+            <div class="comment">
+                <div class="comment-text">1 like لئو</div>
+                <div class="translations">
+                    English: 1 like Leo<br>
+                    Chinese: 1 赞 利欧
+                </div>
+            </div>
+
+            <!-- Comment 49 -->
+            <div class="comment">
+                <div class="comment-text">2 likes لئو ایراد لئو هستش</div>
+                <div class="translations">
+                    English: 2 likes Leo's problem is Leo itself<br>
+                    Chinese: 2 赞 利欧的问题就是利欧本身
+                </div>
+            </div>
+
+            <!-- Comment 50 -->
+            <div class="comment">
+                <div class="comment-text">1 like شما کارت درسته</div>
+                <div class="translations">
+                    English: 1 like Your work is correct<br>
+                    Chinese: 1 赞 你的工作是正确的
+                </div>
+            </div>
+
+            <!-- Comment 51 -->
+            <div class="comment">
+                <div class="comment-text">2 likes ضد یخ بریز توش درست میشه</div>
+                <div class="translations">
+                    English: 2 likes Pour antifreeze in it, it will be fixed<br>
+                    Chinese: 2 赞 倒入防冻液，就会修复
+                </div>
+            </div>
+
+            <!-- Comment 52 -->
+            <div class="comment">
+                <div class="comment-text">1 like مهندس کارت درسته</div>
+                <div class="translations">
+                    English: 1 like Engineer your work is correct<br>
+                    Chinese: 1 赞 工程师你的工作是正确的
+                </div>
+            </div>
+
+            <!-- Comment 53 -->
+            <div class="comment">
+                <div class="comment-text">1 like مشکل خروجی داره</div>
+                <div class="translations">
+                    English: 1 like It has outlet problem<br>
+                    Chinese: 1 赞 出口有问题
+                </div>
+            </div>
+
+            <!-- Comment 54 -->
+            <div class="comment">
+                <div class="comment-text">1 like 😂😂😂😂</div>
+                <div class="translations">
+                    English: 1 like 😂😂😂😂<br>
+                    Chinese: 1 赞 😂😂😂😂
+                </div>
+            </div>
+
+            <!-- Comment 55 -->
+            <div class="comment">
+                <div class="comment-text">1 like محاله ایراد از کار شما باشه استاد 👍</div>
+                <div class="translations">
+                    English: 1 like Impossible the problem is from your work master 👍<br>
+                    Chinese: 1 赞 不可能问题出在你的工作上师傅 👍
+                </div>
+            </div>
+
+            <!-- Comment 56 -->
+            <div class="comment">
+                <div class="comment-text">1 like ❤️❤️❤️</div>
+                <div class="translations">
+                    English: 1 like ❤️❤️❤️<br>
+                    Chinese: 1 赞 ❤️❤️❤️
+                </div>
+            </div>
+
+            <!-- Comment 57 -->
+            <div class="comment">
+                <div class="comment-text">1 like شما کارتون حرف نداره مهندس</div>
+                <div class="translations">
+                    English: 1 like Your work is impeccable engineer<br>
+                    Chinese: 1 赞 工程师你的工作无可挑剔
+                </div>
+            </div>
+
+            <!-- Comment 58 -->
+            <div class="comment">
+                <div class="comment-text">1 like سلام به نظر من ایراد میتونه از سه چیز باشه یک این که سایز خروج کوچیک شده باشه که باعث افزایش فشار توی پمپ میشه دوم این که درایو به درستی تنظیم نیست سوم هم این که به نظر من مهم تر هم هست استفاده نکردن دو زانو در ورودی پمپ هست در پمپ های با توان بالا بهتر هست در ورودی یک دو زانو اجرا بشه تا از پدیده کاویتاسیون جلوگیری بشه پدیده کاویتاسیون باعث افزایش فشار توی قسمت پره ها میشه</div>
+                <div class="translations">
+                    English: 1 like Hello in my opinion the problem could be from three things: first outlet size has become small which increases pressure in pump, second drive is not adjusted properly, third and more important in my opinion is not using double elbow at pump inlet, in high power pumps it's better to install double elbow at inlet to prevent cavitation, cavitation increases pressure in impeller area<br>
+                    Chinese: 1 赞 你好，我认为问题可能来自三个方面：第一出口尺寸变小导致泵内压力增加，第二驱动器未正确调整，第三我认为更重要的是泵入口没有使用双弯头，对于高功率泵最好在入口安装双弯头以防止气蚀，气蚀会增加叶轮区域的压力
+                </div>
+            </div>
+
+            <!-- Comment 59 -->
+            <div class="comment">
+                <div class="comment-text">1 like فقط فلوران و شیمجه الان و تایفو و الکتروجن</div>
+                <div class="translations">
+                    English: 1 like Only Fluran and Shimge now and Taifo and Electrojen<br>
+                    Chinese: 1 赞 只有富朗和现在的新界还有泰福和Electrojen
+                </div>
+            </div>
+
+            <!-- Comment 60 -->
+            <div class="comment">
+                <div class="comment-text">1 like سلام دوست گرامی مشکل از خروجی حداقل خروجی ۱/۱٫۲بایستی باشد</div>
+                <div class="translations">
+                    English: 1 like Hello dear friend problem is from outlet, minimum outlet should be 1/1.2<br>
+                    Chinese: 1 赞 你好亲爱的朋友问题出在出口，最小出口应为1/1.2
+                </div>
+            </div>
+
+            <!-- Comment 61 -->
+            <div class="comment">
+                <div class="comment-text">1 like 👏👏👏😍😍</div>
+                <div class="translations">
+                    English: 1 like 👏👏👏😍😍<br>
+                    Chinese: 1 赞 👏👏👏😍😍
+                </div>
+            </div>
+
+            <!-- Comment 62 -->
+            <div class="comment">
+                <div class="comment-text">1 like درود مهندس‌‌‌لئو‌شرکت‌خوبه‌.‌فکنم‌‌این‌سریع‌همه‌مشکل‌دارن</div>
+                <div class="translations">
+                    English: 1 like Greetings engineer, Leo company is good. I think all in this series have problems<br>
+                    Chinese: 1 赞 工程师好，利欧公司不错。我想这个系列的所有产品都有问题
+                </div>
+            </div>
+
+            <!-- Comment 63 -->
+            <div class="comment">
+                <div class="comment-text">1 like اتوماتتو‌چک کن</div>
+                <div class="translations">
+                    English: 1 like Check your automatic<br>
+                    Chinese: 1 赞 检查你的自动装置
+                </div>
+            </div>
+
+            <!-- Comment 64 -->
+            <div class="comment">
+                <div class="comment-text">1 like 👏👏👏❤️❤️</div>
+                <div class="translations">
+                    English: 1 like 👏👏👏❤️❤️<br>
+                    Chinese: 1 赞 👏👏👏❤️❤️
+                </div>
+            </div>
+
+            <!-- Comment 65 -->
+            <div class="comment">
+                <div class="comment-text">2 likes ایراد از لعو</div>
+                <div class="translations">
+                    English: 2 likes Problem is from Leo<br>
+                    Chinese: 2 赞 问题出在利欧
+                </div>
+            </div>
+
+            <!-- Comment 66 -->
+            <div class="comment">
+                <div class="comment-text">1 like لئو کنسل❌️❌️❌️</div>
+                <div class="translations">
+                    English: 1 like Leo cancel❌️❌️❌️<br>
+                    Chinese: 1 赞 利欧取消❌️❌️❌️
+                </div>
+            </div>
+
+            <!-- Comment 67 -->
+            <div class="comment">
+                <div class="comment-text">1 like اگر بفرمایید چند واحدی هست ساختمان</div>
+                <div class="translations">
+                    English: 1 like If you could say how many units the building has<br>
+                    Chinese: 1 赞 如果你能说明建筑物有多少单元
+                </div>
+            </div>
+
+            <!-- Comment 68 -->
+            <div class="comment">
+                <div class="comment-text">1 like سلام استاد مهره ماسوره دوسر جوش ۴ آذین داره مگه ؟ ماله چه برندیه؟</div>
+                <div class="translations">
+                    English: 1 like Hello master, does Azin have 4 welded union nuts? Which brand is it?<br>
+                    Chinese: 1 赞 师傅好，Azin有4个焊接接头螺母吗？是什么品牌的？
+                </div>
+            </div>
+
+            <!-- Comment 69 -->
+            <div class="comment">
+                <div class="comment-text">1 like ❤️❤️❤️</div>
+                <div class="translations">
+                    English: 1 like ❤️❤️❤️<br>
+                    Chinese: 1 赞 ❤️❤️❤️
+                </div>
+            </div>
+
+            <!-- Comment 70 -->
+            <div class="comment">
+                <div class="comment-text">1 like نصب عالی 👏</div>
+                <div class="translations">
+                    English: 1 like Excellent installation 👏<br>
+                    Chinese: 1 赞 安装很棒 👏
+                </div>
+            </div>
+
+            <!-- Comment 71 -->
+            <div class="comment">
+                <div class="comment-text">1 like برا منم این مشکل پیش اومده،شیر یه طرفه رو روی مکش گذاشتم عالی جواب داد الآن نزدیک به ۲سال میشه</div>
+                <div class="translations">
+                    English: 1 like I also faced this problem, I put check valve on suction, worked great, now almost 2 years<br>
+                    Chinese: 1 赞 我也遇到了这个问题，我在吸入端安装了止回阀，效果很好，现在快2年了
+                </div>
+            </div>
+
+            <!-- Comment 72 -->
+            <div class="comment">
+                <div class="comment-text">1 like پمپ درجه یک و با ضمانت فقط کدخدایی@tasisat_sanati_kadkhodaee</div>
+                <div class="translations">
+                    English: 1 like First class pump with warranty only Kadkhodaee@tasisat_sanati_kadkhodaee<br>
+                    Chinese: 1 赞 一级有保障的泵只有Kadkhodaee@tasisat_sanati_kadkhodaee
+                </div>
+            </div>
+
+            <!-- Comment 73 -->
+            <div class="comment">
+                <div class="comment-text">1 like بعد از اتوماتیک</div>
+                <div class="translations">
+                    English: 1 like After automatic<br>
+                    Chinese: 1 赞 自动之后
+                </div>
+            </div>
+
+            <!-- Comment 74 -->
+            <div class="comment">
+                <div class="comment-text">1 like من خودم اصلا از این مدل پمپ استفاده نکردم ولی نصب قطعا ایراد داره</div>
+                <div class="translations">
+                    English: 1 like I myself never used this model pump but installation definitely has problem<br>
+                    Chinese: 1 赞 我自己从未使用过这种型号的泵，但安装肯定有问题
+                </div>
+            </div>
+
+            <!-- Comment 75 -->
+            <div class="comment">
+                <div class="comment-text">1 like 👏👏👏👏</div>
+                <div class="translations">
+                    English: 1 like 👏👏👏👏<br>
+                    Chinese: 1 赞 👏👏👏👏
+                </div>
+            </div>
+
+            <!-- Comment 76 -->
+            <div class="comment">
+                <div class="comment-text">Reply به صورت اینورتر نصب کردید یعنی چی</div>
+                <div class="translations">
+                    English: Reply You installed as inverter means what<br>
+                    Chinese: 回复 你作为逆变器安装是什么意思
+                </div>
+            </div>
+
+            <!-- Comment 77 -->
+            <div class="comment">
+                <div class="comment-text">Reply برا ورود آب از منبع به پمپ ی فشار شکن بزار</div>
+                <div class="translations">
+                    English: Reply Put a pressure reducer for water entry from tank to pump<br>
+                    Chinese: 回复 在水从水箱进入泵的地方安装减压阀
+                </div>
+            </div>
+
+            <!-- Comment 78 -->
+            <div class="comment">
+                <div class="comment-text">1 like به نظرم پمپ هوا داره.بعضی پمپا هوا میگیره با اب خنک نمیشه داغ میکنه کاسه نمدش خراب میشه.مخزن هم که حتما تمیزه رسوب داخلش نمیره.این لوله پلاستیکی ها هم به نظرم بدرد نمیخوره اگه زیاد داغ بشه موقع اتو وقتی تو هم میکنی مجرای لوله تنگ میشه.خروجی پمپ رو لوله فلزی بکش شاید فشار از رو پمپ برداشته شد.یا اون شیر یک طرفه که خروجی پمپه رو بزاری ورودی پمپ/یه استن هم برا پمپ و موتور باشه بد نیست محکم به زمین پیچ بشه تکون نخوره</div>
+                <div class="translations">
+                    English: 1 like I think pump has air. Some pumps get air, can't cool with water, gets hot, seal gets damaged. Tank is surely clean no sediment inside. These plastic pipes also I think are useless if gets too hot when ironing, pipe passage narrows. Run metal pipe for pump outlet maybe pressure is taken off pump. Or put that check valve at pump inlet/a stand for pump and motor is not bad, screw firmly to ground so it doesn't shake<br>
+                    Chinese: 1 赞 我认为泵有空气。有些泵会吸入空气，无法用水冷却，变热，密封损坏。水箱肯定是干净的，里面没有沉淀物。这些塑料管我认为也没用，如果熨烫时太热，管道通道会变窄。为泵出口铺设金属管也许可以减轻泵的压力。或者把那个止回阀放在泵入口/泵和电机的支架也不错，牢固地拧在地上就不会摇晃
+                </div>
+            </div>
+
+            <!-- Comment 79 -->
+            <div class="comment">
+                <div class="comment-text">1 like خب معلومه ایراد از نصبه... این پمپ اصلا نباید نصب میشد😂😂</div>
+                <div class="translations">
+                    English: 1 like Well obviously problem is from installation... This pump shouldn't have been installed at all😂😂<br>
+                    Chinese: 1 赞 很明显问题出在安装上...这个泵根本不应该安装😂😂
+                </div>
+            </div>
+
+            <!-- Comment 80 -->
+            <div class="comment">
+                <div class="comment-text">1 like فرکانس اسلیپ مشکل داره</div>
+                <div class="translations">
+                    English: 1 like Frequency slip has problem<br>
+                    Chinese: 1 赞 频率滑动有问题
+                </div>
+            </div>
+
+            <!-- Comment 81 -->
+            <div class="comment">
+                <div class="comment-text">1 like نه کنترل سطح داره؟که بی آب کار نکنه؟</div>
+                <div class="translations">
+                    English: 1 like Doesn't it have level control? So it won't work without water?<br>
+                    Chinese: 1 赞 它没有水位控制吗？所以没水时不会工作？
+                </div>
+            </div>
+
+            <!-- Comment 82 -->
+            <div class="comment">
+                <div class="comment-text">2 likes پمپ که نصب کردی شاسی نداره و دائم لرزش داره به اون خاطر نشتی میکنه</div>
+                <div class="translations">
+                    English: 2 likes The pump you installed has no base and constantly vibrates, that's why it leaks<br>
+                    Chinese: 2 赞 你安装的泵没有底座并且不断振动，这就是它泄漏的原因
+                </div>
+            </div>
+
+            <!-- Comment 83 -->
+            <div class="comment">
+                <div class="comment-text">1 like باید دبی مصرفی واحد و ارتفاع اخرین واحد رو در نظر میگرفتی و زمانی که همه اب بخوان مصرف کنن و بعد ۲ پمپ میزاشتی که اگه اول زمان اوج مصرف کم اورد درایو دوم و پمپ دوم تو مدار بیاد که مکانیکال سیل نزنه پمپ</div>
+                <div class="translations">
+                    English: 1 like You should have considered unit flow rate and height of last unit, and when all want to use water, then install 2 pumps so if first can't handle peak consumption, second drive and pump come into circuit to prevent mechanical seal damage<br>
+                    Chinese: 1 赞 你应该考虑单元的流量和最后一个单元的高度，当所有人都要用水时，然后安装2个泵，这样如果第一个无法处理高峰消耗，第二个驱动器和泵进入电路以防止机械密封损坏
+                </div>
+            </div>
+
+            <!-- Comment 84 -->
+            <div class="comment">
+                <div class="comment-text">2 likes قطعا ایراد از پمپ برندی بی کیفیت تر از لئو وجود نداره بنده هرجا نصب کردم با مشکلات این چنینی مواجه شدم و به شدت ازیت شدم همکارای محترم طفا اصلا لئو نصب نکنید چون جز درگیری و درد سر هیچ سود و منفعتی براتون نداره</div>
+                <div class="translations">
+                    English: 2 likes Definitely problem is from pump, no brand worse than Leo exists, wherever I installed faced such problems and got very upset, dear colleagues please don't install Leo at all because except trouble and headache it has no benefit for you<br>
+                    Chinese: 2 赞 肯定是泵的问题，没有比利欧更差的品牌，无论我在哪里安装都遇到这样的问题并且非常沮丧，亲爱的同事们请不要安装利欧，因为除了麻烦和头痛它对你没有任何好处
+                </div>
+            </div>
+
+            <!-- Comment 85 -->
+            <div class="comment">
+                <div class="comment-text">2 likes اگر پروژه یکسان داشتید مغایرت ها دو پروژه بررسی کنید ایراد کار شما درمیاد</div>
+                <div class="translations">
+                    English: 2 likes If you had identical project, check differences between two projects, your work problem will be found<br>
+                    Chinese: 2 赞 如果你有相同的项目，检查两个项目之间的差异，就会发现你的工作问题
+                </div>
+            </div>
+
+            <!-- Comment 86 -->
+            <div class="comment">
+                <div class="comment-text">1 like مشکل از مصرف کننده هست زیاد حمام میره عادل در جریانه</div>
+                <div class="translations">
+                    English: 1 like Problem is from consumer who takes too many baths, Adl is in the flow<br>
+                    Chinese: 1 赞 问题出在洗澡过多的消费者身上，Adl在流程中
+                </div>
+            </div>
+
+            <!-- Comment 87 -->
+            <div class="comment">
+                <div class="comment-text">1 like سیل مکانیکال رو خودت عوض کن از بازار بخر خب معلومه یه سیل که خرابه رو شرکت عوض میکنه باز همون مارک رو میندازه</div>
+                <div class="translations">
+                    English: 1 like Change mechanical seal yourself buy from market, obviously company replaces bad seal with same brand again<br>
+                    Chinese: 1 赞 自己更换机械密封从市场购买，显然公司再次用同一品牌更换坏的密封
+                </div>
+            </div>
+
+            <!-- Comment 88 -->
+            <div class="comment">
+                <div class="comment-text">1 like اون نافی که اب داده بود اسم چی بود</div>
+                <div class="translations">
+                    English: 1 like What was the name of that nafi that leaked water<br>
+                    Chinese: 1 赞 那个漏水的纳菲叫什么名字
+                </div>
+            </div>
+
+            <!-- Comment 89 -->
+            <div class="comment">
+                <div class="comment-text">1 like پمپ لئو کیفیت نداره</div>
+                <div class="translations">
+                    English: 1 like Leo pump has no quality<br>
+                    Chinese: 1 赞 利欧泵没有质量
+                </div>
+            </div>
+
+            <!-- Comment 90 -->
+            <div class="comment">
+                <div class="comment-text">1 like کاملا درسته ایراد از نصبه شما تو خروجی قبل شیر یکطرفه یه سه راهی ۱ ۱/۲ به ۱ اینچ میدادی بعد منبع تحت فشار ها و شیر ۵ راهی رو وصل میکردی بالا ترش شیر یکطرفه رو چرا چون فشاری که پمپ میزنه در هیچ جا رگلاژ نمیشه و فشار همیشه رو پروانه باقی میمونه</div>
+                <div class="translations">
+                    English: 1 like Absolutely correct, problem is from installation, you gave 1 1/2 to 1 inch tee before check valve at outlet then connected pressure tanks and 5-way valve, why check valve higher up? because pressure from pump can't be regulated anywhere and pressure always remains on impeller<br>
+                    Chinese: 1 赞 完全正确，问题出在安装上，你在出口止回阀前给了1 1/2到1英寸的三通，然后连接压力罐和五通阀，为什么止回阀更高？因为泵的压力无法在任何地方调节，压力始终保持在叶轮上
+                </div>
+            </div>
+
+            <!-- Comment 91 -->
+            <div class="comment">
+                <div class="comment-text">1 like گوه ترین پمپ پمپ لئوهست</div>
+                <div class="translations">
+                    English: 1 like The shittiest pump is Leo pump<br>
+                    Chinese: 1 赞 最差的泵是利欧泵
+                </div>
+            </div>
+
+            <!-- Comment 92 -->
+            <div class="comment">
+                <div class="comment-text">1 like یورک رو انداختی خروجی پمپ فشار رو پمپ‌نیست پمپ خیلی باحاله</div>
+                <div class="translations">
+                    English: 1 like You put York at pump outlet, pressure is not on pump, pump is very cool<br>
+                    Chinese: 1 赞 你把约克放在泵出口，压力不在泵上，泵很酷
+                </div>
+            </div>
+
+            <!-- Comment 93 -->
+            <div class="comment">
+                <div class="comment-text">2 likes پمپ هر چی هم آشغال باشه نمیتونه انقدر زود سیل خراب کنه،پس خرابی سیل در دو موقع میشه،یا پمپ در مواقعی خاموش نمیشه و یکسره میشه ،یا بی آب میشه ،در کل به سنسور و تنظیمات اینورتر شک‌کنید</div>
+                <div class="translations">
+                    English: 2 likes No matter how bad pump is, it can't damage seal so quickly, so seal damage happens in two cases: either pump doesn't turn off sometimes and runs continuously, or runs dry, generally suspect sensor and inverter settings<br>
+                    Chinese: 2 赞 无论泵多差，它都不能这么快损坏密封，所以密封损坏发生在两种情况：要么泵有时不关闭并连续运行，要么干运转，通常怀疑传感器和逆变器设置
+                </div>
+            </div>
+
+            <!-- Comment 94 -->
+            <div class="comment">
+                <div class="comment-text">1 like نافی فقط زمانی آب میده که فنر تحت فشار نباشه یا شفت خوب اب بند نمیشه یا قسمت ثابت تو بخش چدنی خوب تراش نخورده ولی اگه بعد یهفته این اتفاق افتاده ممکنه سیلد از قسمت ثابت در میره باید همه اینا برسی شه</div>
+                <div class="translations">
+                    English: 1 like Nafi leaks water only when spring is not under pressure or shaft doesn't seal well or fixed part in cast iron section is not properly machined but if this happened after one week maybe seal comes off from fixed part, all these should be checked<br>
+                    Chinese: 1 赞 纳菲只有在弹簧不受压或轴密封不好或铸铁部分的固定部分未正确加工时才会漏水，但如果一周后发生这种情况，可能是密封从固定部分脱落，所有这些都应该检查
+                </div>
+            </div>
+
+            <!-- Comment 95 -->
+            <div class="comment">
+                <div class="comment-text">1 like سایز لوله ببر بالا</div>
+                <div class="translations">
+                    English: 1 like Increase pipe size<br>
+                    Chinese: 1 赞 增加管道尺寸
+                </div>
+            </div>
+
+            <!-- Comment 96 -->
+            <div class="comment">
+                <div class="comment-text">1 like بنظرم ایرادی تو کار نداره فقط اگه صافی قبلش باشه بهتره و دوم اینکه جنسش خرابه</div>
+                <div class="translations">
+                    English: 1 like I think there's no problem in work, just if there's filter before it would be better and second its material is bad<br>
+                    Chinese: 1 赞 我认为工作中没有问题，只是如果前面有过滤器会更好，其次它的材料不好
+                </div>
+            </div>
+
+            <!-- Comment 97 -->
+            <div class="comment">
+                <div class="comment-text">1 like لئو آشغاله</div>
+                <div class="translations">
+                    English: 1 like Leo is garbage<br>
+                    Chinese: 1 赞 利欧是垃圾
+                </div>
+            </div>
+
+            <!-- Comment 98 -->
+            <div class="comment">
+                <div class="comment-text">1 like همینکه شیر بطرفه بالای پمپ بستی دمت گرم نصب هم اکیه بنظرم ی سیل مرغوب بگیر درست میشه</div>
+                <div class="translations">
+                    English: 1 like Just that you closed bypass valve above pump is great, installation is also OK, I think get a quality seal and it will be fixed<br>
+                    Chinese: 1 赞 你关闭了泵上方的旁通阀很棒，安装也可以，我认为得到一个优质的密封就会修复
+                </div>
+            </div>
+
+            <!-- Comment 99 -->
+            <div class="comment">
+                <div class="comment-text">1 like خب یه برند دیگه بنداز مهندس چرا سر خودت درد میاری نصب به این قشنگه اشکالش چیه کارت بیسته بیست</div>
+                <div class="translations">
+                    English: 1 like Well install another brand engineer why trouble yourself, installation is this beautiful what's its problem, your work is perfect 20/20<br>
+                    Chinese: 1 赞 好吧安装另一个品牌工程师为什么要麻烦自己，安装这么漂亮有什么问题，你的工作是完美的20/20
+                </div>
+            </div>
+
+            <!-- Comment 100 -->
+            <div class="comment">
+                <div class="comment-text">1 like لئو اشغاله</div>
+                <div class="translations">
+                    English: 1 like Leo is garbage<br>
+                    Chinese: 1 赞 利欧是垃圾
+                </div>
+            </div>
+
+            <!-- Comment 101 -->
+            <div class="comment">
+                <div class="comment-text">1 like اتصالات سفید دبی کمی دارن . بهتره از فلکه کشویی طبق سایز ورودی نصب بشه</div>
+                <div class="translations">
+                    English: 1 like White fittings have low flow rate. Better to install gate valve according to inlet size<br>
+                    Chinese: 1 赞 白色配件流量低。最好根据入口尺寸安装闸阀
+                </div>
+            </div>
+
+            <!-- Comment 102 -->
+            <div class="comment">
+                <div class="comment-text">1 like ایراد از نوع سیل نافی میتونه باشه .ولی اگرقطر لوله آب ورودی پمپ کمتر از قطر لوله مجاز باشه این مشکل پیش میاد در این صورت بدنه پمپ قسمت پروانه ها و کاسه پمپ گرم میشود .ضمنا این اتفاق در فرکانس پایین هم میتونه سیل نافی بسوزونه</div>
+                <div class="translations">
+                    English: 1 like Problem could be from nafi seal type. But if water inlet pipe diameter is less than allowed pipe diameter this problem occurs, in this case pump body at impeller area and pump bowl gets hot. Also this can burn nafi seal at low frequency<br>
+                    Chinese: 1 赞 问题可能来自纳菲密封类型。但如果水入口管道直径小于允许的管道直径就会出现这个问题，在这种情况下，叶轮区域的泵体和泵碗会变热。此外，这可能在低频下烧毁纳菲密封
+                </div>
+            </div>
+
+            <!-- Comment 103 -->
+            <div class="comment">
+                <div class="comment-text">1 like این چرخه معیوب تموم نمیشه مگر این شرکتهای چینی فروش بی کیفیت رو تحریم کرد حتی اگه منجر به هزینه بالاتر برای کارفرما داشته باشه</div>
+                <div class="translations">
+                    English: 1 like This defective cycle won't end unless these Chinese companies are banned from selling low quality even if it leads to higher cost for employer<br>
+                    Chinese: 1 赞 这个有缺陷的循环不会结束，除非这些中国公司被禁止销售低质量产品，即使这会导致雇主的成本更高
+                </div>
+            </div>
+
+            <!-- Comment 104 -->
+            <div class="comment">
+                <div class="comment-text">1 like الکتروژن مگه مرده</div>
+                <div class="translations">
+                    English: 1 like Is Electrojen dead?<br>
+                    Chinese: 1 赞 Electrojen死了吗？
+                </div>
+            </div>
+
+            <!-- Comment 105 -->
+            <div class="comment">
+                <div class="comment-text">1 like سیلش مشکل داره👏</div>
+                <div class="translations">
+                    English: 1 like Its seal has problem👏<br>
+                    Chinese: 1 赞 它的密封有问题👏
+                </div>
+            </div>
+
+            <!-- Comment 106 -->
+            <div class="comment">
+                <div class="comment-text">1 like به نظر من یه عدد شیر یک طرفه دیگه اضافه کنید ،🤔</div>
+                <div class="translations">
+                    English: 1 like In my opinion add one more check valve, 🤔<br>
+                    Chinese: 1 赞 在我看来再加一个止回阀，🤔
+                </div>
+            </div>
+
+            <!-- Comment 107 -->
+            <div class="comment">
+                <div class="comment-text">1 like شیرخودکار مشکل داره برای اینکه واشر زود خراب میشه باید شیر زنگوله بزاری</div>
+                <div class="translations">
+                    English: 1 like Automatic valve has problem because washer gets damaged quickly, you should install bell valve<br>
+                    Chinese: 1 赞 自动阀有问题因为垫圈很快损坏，你应该安装铃阀
+                </div>
+            </div>
+
+            <!-- Comment 108 -->
+            <div class="comment">
+                <div class="comment-text">1 like نصاب بستم.از نآفی آب داد.من هم با گارانتی پمپ رو عوض کردم.</div>
+                <div class="translations">
+                    English: 1 like Installer lied. Nafi leaked water. I also replaced pump under warranty.<br>
+                    Chinese: 1 赞 安装人员撒谎了。纳菲漏水了。我也在保修期内更换了泵。
+                </div>
+            </div>
+
+            <!-- Comment 109 -->
+            <div class="comment">
+                <div class="comment-text">1 like پمپ لئو رفیق موفق باشی 🔥</div>
+                <div class="translations">
+                    English: 1 like Leo pump buddy good luck 🔥<br>
+                    Chinese: 1 赞 利欧泵朋友祝你好运 🔥
+                </div>
+            </div>
+
+            <!-- Comment 110 -->
+            <div class="comment">
+                <div class="comment-text">1 like از اولش هم نباید گردن می‌گرفتند که ایراد از نصب هستش مگه چه اتفاقی تو نصب قرارع بیافته که این ایراد پیدا بشه</div>
+                <div class="translations">
+                    English: 1 like From beginning they shouldn't have claimed problem is from installation, what could happen in installation that causes this problem<br>
+                    Chinese: 1 赞 从一开始他们就不应该声称问题出在安装上，安装中会发生什么导致这个问题
+                </div>
+            </div>
+            
+            <script>
+                // Add a horizontal rule after each comment
+                document.querySelectorAll('.comment').forEach(comment => {
+                    const hr = document.createElement('hr');
+                    comment.parentNode.insertBefore(hr, comment.nextSibling);
+                });
+            </script>
+            <!-- Comment 111 -->
+            <div class="comment">
+                <div class="comment-text">1 like دوتا منبع تحت فشار با فشار یک عددپمپ چطور میخواد بلافاصله از یک زانونود درجه عبور کنه.همین تا خیر در خروج آب باعث فشار به پمپ وآبدهی آن می‌شود.</div>
+                <div class="translations">
+                    English: 1 like How two pressure tanks with pressure from one pump will immediately pass through one valve. This delay in water outlet causes pressure on pump and its leakage.<br>
+                    Chinese: 1 赞 两个压力罐从一个泵的压力如何立即通过一个阀门。出水口的这种延迟会导致泵的压力和泄漏。
+                </div>
+            </div>
+            <hr>
+            <!-- Comment 112 -->
+            <div class="comment">
+                <div class="comment-text">1 like ایراد از اب است😂😂😂</div>
+                <div class="translations">
+                    English: 1 like Problem is from water😂😂😂<br>
+                    Chinese: 1 赞 问题出在水上😂😂😂
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+        <!-- JavaScript for Charts and Word Clouds -->
+        <script>
+            // Language switcher function
+            function showDescription(section, lang) {
+                // Hide all language contents for this section
+                document.querySelectorAll(`#${section}-en, #${section}-fa, #${section}-zh`).forEach(el => {
+                    el.classList.remove('active');
+                });
+                
+                // Show selected language
+                document.getElementById(`${section}-${lang}`).classList.add('active');
+                
+                // Update tab styles
+                const tabs = document.querySelectorAll(`#${section} .lang-tab`);
+                tabs.forEach(tab => tab.classList.remove('active'));
+                event.currentTarget.classList.add('active');
+            }
+
+            // Doughnut Chart
+            new Chart(document.getElementById('doughnutChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Positive', 'Negative', 'Neutral'],
+                    datasets: [{
+                        data: [25, 53.57, 21.43],
+                        backgroundColor: [
+                            'rgba(64, 93, 230, 0.9)',
+                            'rgba(193, 53, 132, 0.9)',
+                            'rgba(253, 29, 29, 0.9)'
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Bar Chart
+            new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Positive', 'Negative', 'Neutral'],
+                    datasets: [{
+                        label: 'Likes',
+                        data: [7, 15, 6],
+                        backgroundColor: [
+                            'rgba(64, 93, 230, 0.9)',
+                            'rgba(193, 53, 132, 0.9)',
+                            'rgba(253, 29, 29, 0.9)'
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Word Clouds
+            const technicalWords = [
+                ['mechanical seal', 100],
+                ['leakage', 90],
+                ['shaft', 70],
+                ['pump', 120],
+                ['inverter', 60],
+                ['pressure', 80],
+                ['fitting', 70],
+                ['maintenance', 70],
+                ['mechanical failure', 110]
+            ];
+
+            const colorWords = [
+                ['new color', 200],
+                ['orange', 70],
+                ['green', 60],
+                ['red', 80],
+                ['change', 60],
+                ['aesthetic', 50],
+                ['look', 40],
+                ['appearance', 60]
+            ];
+
+            // Technical Word Cloud
+            WordCloud(document.getElementById('technicalWordCloud'), {
+                list: technicalWords,
+                gridSize: 12,
+                weightFactor: 0.5,
+                fontFamily: 'Segoe UI, sans-serif',
+                color: (word) => word === 'pump' ? '#E1306C' : '#405DE6',
+                backgroundColor: '#ffffff',
+                minSize: 10
+            });
+
+            // Color Word Cloud
+            WordCloud(document.getElementById('colorWordCloud'), {
+                list: colorWords,
+                gridSize: 12,
+                weightFactor: 0.5,
+                fontFamily: 'Segoe UI, sans-serif',
+                color: (word) => {
+                    const colors = {
+                        'red': '#E1306C',
+                        'orange': '#FD1D1D',
+                        'green': '#4CAF50',
+                        'default': '#C13584'
+                    };
+                    return colors[word] || colors.default;
+                },
+                backgroundColor: '#ffffff',
+                minSize: 10
+            });
+        </script>
+</body>
+</html>
